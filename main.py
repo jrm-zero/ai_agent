@@ -14,22 +14,24 @@ def api_key():
     return client
 
 def call_to_model(client, prompt):
-    messages = [types.Content(role="user", parts=[types.Part(text=prompt)])]
+    messages = [types.Content(role="user", parts=[types.Part(text=prompt.user_prompt)])]
     response = client.models.generate_content(
         model='gemini-2.5-flash', contents=messages
     )
     if response.usage_metadata == None:
         raise RuntimeError("likely failed API request")
-    print(f"User prompt: {prompt}")
-    print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-    print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+    if prompt.verbose == True:
+        print(f"User prompt: {prompt.user_prompt}")
+        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
     print(f"Response: \n{response.text}")
 
 def get_user_input():
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
-    return args.user_prompt
+    return args
 
 def main():
     client = api_key()
