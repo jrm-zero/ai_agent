@@ -2,6 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 def api_key():
     load_dotenv()
@@ -13,8 +14,9 @@ def api_key():
     return client
 
 def call_to_model(client, prompt):
+    messages = [types.Content(role="user", parts=[types.Part(text=prompt)])]
     response = client.models.generate_content(
-        model='gemini-2.5-flash', contents=prompt
+        model='gemini-2.5-flash', contents=messages
     )
     if response.usage_metadata == None:
         raise RuntimeError("likely failed API request")
