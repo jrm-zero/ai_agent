@@ -1,5 +1,5 @@
 import unittest
-from pkg.calculator import Calculator
+from pkg.calculator import Calculator # type: ignore
 
 
 class TestCalculator(unittest.TestCase):

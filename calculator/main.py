@@ -1,6 +1,6 @@
 import sys
-from pkg.calculator import Calculator
-from pkg.render import format_json_output
+from pkg.calculator import Calculator # type: ignore
+from pkg.render import format_json_output # type: ignore
 
 
 def main():
