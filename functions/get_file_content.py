@@ -1,12 +1,13 @@
 import os
 from google import genai
-from google.genai import types
+from google.genai import types # type: ignore
 
 schema_get_file_content = types.FunctionDeclaration(
     name="get_file_content",
     description="Reads and prints a set number of characters from a specified file relative to the working directory.",
     parameters=types.Schema(
         type=types.Type.OBJECT,
+        required=["file_path"],
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,

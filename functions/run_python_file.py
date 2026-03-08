@@ -1,17 +1,25 @@
 import os
 import subprocess
 from google import genai
-from google.genai import types
+from google.genai import types # type: ignore
 
 schema_run_python_file = types.FunctionDeclaration(
     name="run_python_file",
     description="Executes python files in a specified directory relative to the working directory.",
     parameters=types.Schema(
         type=types.Type.OBJECT,
+        required=["file_path"],
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,
                 description="File path for file to be executed, relative to the working directory (default is the working directory itself)",
+            ),
+            "args": types.Schema(
+                type=types.Type.ARRAY,
+                items=types.Schema(
+                    type=types.Type.STRING,
+                ),
+                description="Optional arguments that may be provided"
             ),
         },
     ),
