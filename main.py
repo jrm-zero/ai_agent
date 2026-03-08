@@ -1,7 +1,7 @@
 import os
 import argparse
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 from dotenv import load_dotenv # type: ignore
 from google import genai
 from google.genai import types # type: ignore
@@ -32,10 +32,20 @@ def call_to_model(client, prompt):
         print(f"User prompt: {prompt.user_prompt}")
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-        
+
     if response.function_calls != None:
+        function_responses = []
         for item in response.function_calls:
-            print(f"Calling function: {item.name}({item.args})")
+            function_call_result = call_function(item, prompt.verbose)
+            if len(function_call_result.parts) == 0:
+                raise Exception(f"Function {item.name} returned an empty list!")
+            if function_call_result.parts[0].function_response == None:
+                raise Exception(f"Function {item.name} parts[0] returned a None result!")
+            if function_call_result.parts[0].function_response.response == None:
+                raise Exception(f"Function {item.name} returned None as a response!")
+            function_responses.append(function_call_result.parts[0])
+            if prompt.verbose == True:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
     else:
         print(f"Response: \n{response.text}")
 
