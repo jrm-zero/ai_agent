@@ -1,5 +1,7 @@
 import os
 import argparse
+from prompts import system_prompt
+from call_function import available_functions
 from dotenv import load_dotenv # type: ignore
 from google import genai
 from google.genai import types # type: ignore
@@ -16,7 +18,13 @@ def api_key():
 def call_to_model(client, prompt):
     messages = [types.Content(role="user", parts=[types.Part(text=prompt.user_prompt)])]
     response = client.models.generate_content(
-        model='gemini-2.5-flash', contents=messages
+        model='gemini-2.5-flash', 
+        contents=messages,
+        config=types.GenerateContentConfig(
+            tools=[available_functions],
+            system_instruction=system_prompt,
+            temperature=0
+        )
     )
     if response.usage_metadata == None:
         raise RuntimeError("likely failed API request")
@@ -24,7 +32,12 @@ def call_to_model(client, prompt):
         print(f"User prompt: {prompt.user_prompt}")
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-    print(f"Response: \n{response.text}")
+        
+    if response.function_calls != None:
+        for item in response.function_calls:
+            print(f"Calling function: {item.name}({item.args})")
+    else:
+        print(f"Response: \n{response.text}")
 
 def get_user_input():
     parser = argparse.ArgumentParser(description="Chatbot")
