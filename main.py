@@ -68,15 +68,18 @@ def get_user_input():
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument("--new_convo", action="store_true", help="Refresh conversation")
     args = parser.parse_args()
     return args
 
 def main():
     client = api_key()
     prompt = get_user_input()
+    if prompt.new_convo == True:
+        write_file(".", "prior_convo.txt", "")
     previous_convo = get_file_content(".", "prior_convo.txt")
     response = call_to_model(client, prompt, previous_convo)
-    previous_convo = previous_convo + f"\n----\nuser input: {prompt.user_prompt}\n----\nresponse: {response}"
+    previous_convo = previous_convo + f"\n----new_log----\nuser input: {prompt.user_prompt}\n----\nresponse: {response}"
     write_file(".", "prior_convo.txt", previous_convo)
 
 if __name__ == "__main__":
