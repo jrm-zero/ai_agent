@@ -1,6 +1,8 @@
 import os
 import argparse
 import sys
+from functions.write_file import write_file
+from functions.get_file_content import get_file_content
 from prompts import system_prompt
 from call_function import available_functions, call_function
 from dotenv import load_dotenv # type: ignore
@@ -16,8 +18,9 @@ def api_key():
     client = genai.Client(api_key=api_key)
     return client
 
-def call_to_model(client, prompt):
+def call_to_model(client, prompt, previous_convo):
     messages = [types.Content(role="user", parts=[types.Part(text=prompt.user_prompt)])]
+    messages.append(types.Content(role="user", parts=[types.Part(text=previous_convo)]))
     for _ in range(20):
         response = client.models.generate_content(
             model='gemini-2.5-flash', 
@@ -55,7 +58,7 @@ def call_to_model(client, prompt):
                     print(f"-> {function_call_result.parts[0].function_response.response}")
         else:
             print(f"Response: \n{response.text}")
-            return
+            return response.text
         
         messages.append(types.Content(role="user", parts=function_responses))
     
@@ -71,7 +74,10 @@ def get_user_input():
 def main():
     client = api_key()
     prompt = get_user_input()
-    call_to_model(client, prompt)
+    previous_convo = get_file_content(".", "prior_convo.txt")
+    response = call_to_model(client, prompt, previous_convo)
+    previous_convo = previous_convo + f"\n----\nuser input: {prompt.user_prompt}\n----\nresponse: {response}"
+    write_file(".", "prior_convo.txt", previous_convo)
 
 if __name__ == "__main__":
     main()
